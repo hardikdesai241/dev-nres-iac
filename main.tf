@@ -1,4 +1,11 @@
+# This code is only for DEV environment. This code will create VPC, Subnets,
+# Internet Gateway, Route Table, Security Groups, EC2 Instances, Network Load Balancer,
+# RDS Instance and all other required resources in AWS.
+
+# Copy of this code is available at the following location: https://github.com/hardikdesai241/dev-nres-iac
+
 # Provider configuration
+
 provider "aws" {
   region     = var.region
   access_key = var.aws_access_key
