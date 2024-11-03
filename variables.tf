@@ -74,7 +74,7 @@ variable "project" {
 variable "dev-nres-key-pair" {
   description = "key pair to use for EC2 instance access"
   type        = string
-  default     = "dev-ec2-key-pair"
+  default     = "dev-nres-key-pair"
 }
 
 variable "db_username" {
