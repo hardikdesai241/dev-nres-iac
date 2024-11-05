@@ -384,8 +384,8 @@ resource "aws_db_subnet_group" "dev-oraclerds-subnet" {
 
 resource "aws_db_option_group" "nres-oracledb-option-group" {
   name                     = "nres-oracledb-option-group"
-  engine_name              = "oracle-se2" # replace with your RDS engine name
-  major_engine_version     = "19"         # replace with your RDS major engine version (e.g., 19 for Oracle 19c)
+  engine_name              = "oracle-se2" # RDS engine name
+  major_engine_version     = "19"         # RDS major engine version (e.g., 19 for Oracle 19c)
   option_group_description = "Option group for Oracle RDS with APEX and S3 integration"
 
   option {
@@ -413,12 +413,13 @@ resource "aws_db_instance" "dev-oraclerds" {
   allocated_storage       = 2048
   max_allocated_storage   = 4096
   db_name                 = "ORACLEDB" # Make sure that database name is all CAPS, otherwise RDS will try to recreate RDS instance every time. The name cannot be more than 8 characters  
-  storage_type            = "io2"
+  storage_type            = "gp3"
+  storage_throughput      = "500"
   engine                  = "oracle-se2"
   engine_version          = "19"
   instance_class          = "db.m5.xlarge"
   license_model           = "bring-your-own-license"
-  iops                    = 1024
+  iops                    = 12000
   storage_encrypted       = true
   identifier              = "dev-nres-oradb"
   username                = var.db_username
