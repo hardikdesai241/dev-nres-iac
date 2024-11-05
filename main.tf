@@ -25,6 +25,10 @@ resource "aws_vpc" "main" {
       Name = "dev-nres-vpc"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # ---------------Below code is for Listner Subnets----------------
@@ -40,6 +44,10 @@ resource "aws_subnet" "subnet_1a" {
       Name = "dev-listnersubnet-az1a"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 resource "aws_subnet" "subnet_1b" {
@@ -54,6 +62,10 @@ resource "aws_subnet" "subnet_1b" {
       Name = "dev-listnersubnet-az1b"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 #----------------Above code is for Listner Subnets----------------
@@ -72,6 +84,10 @@ resource "aws_subnet" "dev-oraclerds-subnet_1a" {
       Name = "dev-oracledb-aubnet-az1a"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 resource "aws_subnet" "dev-oraclerds-subnet_1b" {
@@ -86,6 +102,10 @@ resource "aws_subnet" "dev-oraclerds-subnet_1b" {
       Name = "dev-oracledb-subnet-az1b"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # ----------------Above code is for RDS Subnet----------------
@@ -100,6 +120,9 @@ resource "aws_internet_gateway" "main" {
       Name = "dev-nres-igw"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Route Table
@@ -117,6 +140,9 @@ resource "aws_route_table" "main" {
       Name = "dev-nres-rt"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Route Table Associations
@@ -180,6 +206,10 @@ resource "aws_security_group" "ec2" {
       Name = "dev-nres-ec2-sg"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Security Group for RDS instances
@@ -215,6 +245,9 @@ resource "aws_security_group" "dev-oraclerds-SG" {
       Name = "dev-nres-db-sg"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # EC2 Instances in subnet 1a
@@ -234,6 +267,9 @@ resource "aws_instance" "ec2_1a" {
       Name = "dev-ec2-us-east-1a-${count.index + 1}"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # EC2 Instances in subnet 1b
@@ -253,6 +289,9 @@ resource "aws_instance" "ec2_1b" {
       Name = "dev-ec2-us-east-1b-${count.index + 1}"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Target Group
@@ -282,6 +321,9 @@ resource "aws_lb_target_group" "main" {
       Name = "dev-nres-tg"
     }
   )
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Target Group Attachments
@@ -315,6 +357,10 @@ resource "aws_lb" "main" {
       Name = "dev-nres-nlb"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 }
 
 # Load Balancer Listener
@@ -336,9 +382,36 @@ resource "aws_db_subnet_group" "dev-oraclerds-subnet" {
   subnet_ids = [aws_subnet.dev-oraclerds-subnet_1a.id, aws_subnet.dev-oraclerds-subnet_1b.id]
 }
 
+resource "aws_db_option_group" "nres-oracledb-option-group" {
+  name                     = "nres-oracledb-option-group"
+  engine_name              = "oracle-se2" # replace with your RDS engine name
+  major_engine_version     = "19"         # replace with your RDS major engine version (e.g., 19 for Oracle 19c)
+  option_group_description = "Option group for Oracle RDS with APEX and S3 integration"
+
+  option {
+    option_name = "APEX"
+    version     = "20.1" # specify the APEX version
+  }
+
+  option {
+    option_name = "APEXDEV"
+    # No option_version needed
+  }
+
+  option {
+    option_name = "S3_INTEGRATION"
+    # No option_version needed
+  }
+
+  tags = {
+    createdOn = timestamp()
+  }
+}
+
+
 resource "aws_db_instance" "dev-oraclerds" {
   allocated_storage       = 2048
-  max_allocated_storage   = 2048
+  max_allocated_storage   = 4096
   db_name                 = "ORACLEDB" # Make sure that database name is all CAPS, otherwise RDS will try to recreate RDS instance every time. The name cannot be more than 8 characters  
   storage_type            = "io2"
   engine                  = "oracle-se2"
@@ -350,6 +423,7 @@ resource "aws_db_instance" "dev-oraclerds" {
   identifier              = "dev-nres-oradb"
   username                = var.db_username
   password                = var.db_password
+  option_group_name       = aws_db_option_group.nres-oracledb-option-group.name # associate with the created option group
   db_subnet_group_name    = aws_db_subnet_group.dev-oraclerds-subnet.name
   vpc_security_group_ids  = [aws_security_group.dev-oraclerds-SG.id]
   publicly_accessible     = true
@@ -364,6 +438,10 @@ resource "aws_db_instance" "dev-oraclerds" {
       Name = "dev-nres-oracledb"
     }
   )
+
+  lifecycle {
+    ignore_changes = [tags["createdOn"]]
+  }
 
 }
 
